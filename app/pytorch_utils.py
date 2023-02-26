@@ -27,7 +27,7 @@ from torch import nn
 
 # Layer details for the neural network
 
-# train
+# model class definition and architectures
 input_size = 784
 hidden_sizes = [128, 64]
 output_size = 10
@@ -38,7 +38,7 @@ model = nn.Sequential(nn.Linear(input_size, hidden_sizes[0]),
                         nn.ReLU(),
                         nn.Linear(hidden_sizes[1], output_size),
                         nn.LogSoftmax(dim=1))
-
+# training function
 def retrain(lr, num_epoch, bs):
     transform = transforms.Compose([transforms.ToTensor(),
                               transforms.Normalize((0.5,), (0.5,)),
@@ -56,11 +56,12 @@ def retrain(lr, num_epoch, bs):
     print(type(images))
     print(images.shape)
     print(labels.shape)
-
+    # set model training loss functions and hyperpatameters
     criterion = nn.NLLLoss()
     optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
     time0 = time()
     epochs = num_epoch
+    # train
     for e in range(epochs):
         running_loss = 0
         num_correct = 0
@@ -88,6 +89,8 @@ def retrain(lr, num_epoch, bs):
         acc = round(100 * num_correct / (len(trainloader) * bs), 2)
         print("Epoch {} - Training loss: {} - Training Accuracy: {}".format(e, running_loss/len(trainloader),acc))
         correct_count, all_count = 0, 0
+        
+        # validation step
         for images,labels in valloader:
             for i in range(len(labels)):
                 img = images[i].view(1, 784)
@@ -114,10 +117,6 @@ def retrain(lr, num_epoch, bs):
     torch.save(model.state_dict(), 'mnist_try.pth')
     return acc, test_acc
 
-# print(retrain(0.01, 2, 64))
-#load model
-
-# print(model)
 
 #validation
 def validate():
@@ -157,12 +156,11 @@ def transform_image(image_bytes):
     image = Image.open(io.BytesIO(image_bytes))
     return my_transforms(image).unsqueeze(0)
 
+  # test function with sample images
 def predict(ts):
+  # load the trained model
     model.load_state_dict(torch.load("mnist_try.pth"))
-    # prediction json format: {"datetime": "d/m/y", "endpoint": "train/infer", "status": "200/500"}
-    # with open(img_path, 'rb') as f:
-    #     image_bytes = f.read()
-    #     tensor = transform_image(image_bytes=image_bytes)
+    
     ts = ts.view(1, 784)
     with torch.no_grad():
         logps = model(ts)
