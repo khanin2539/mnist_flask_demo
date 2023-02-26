@@ -48,14 +48,14 @@ def train():
             c.execute("SELECT * FROM system_log2")
             print(c.fetchall())
             conn.commit()
-            return jsonify({'error': '500 Internal Server Error'})
-            # abort(500)
+            # return jsonify({'error': '500 Internal Server Error'})
+            abort(500)
 
 
-# @app.errorhandler(500)
-# def internal_error(error):
+@app.errorhandler(500)
+def internal_error(error):
 
-#     return "500 Internal Server Error."
+    return "500 Internal Server Error."
 
 
 @app.route('/infer', methods=['POST'])
@@ -83,6 +83,6 @@ def infer():
             c.execute("SELECT * FROM system_log2")
             print(c.fetchall())
             conn.commit()
-            # abort(500)
-            return jsonify({'error': '500 Internal Server Error'})        
+            abort(500)
+            # return jsonify({'error': '500 Internal Server Error'})        
 app.run()
