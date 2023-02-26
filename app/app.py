@@ -2,7 +2,6 @@
 # json conda certu app:  curl -X POST localhost:5000/infer -F file=@187.png
 
 import numpy as np
-import train
 from datetime import datetime
 from pytorch_utils import predict, transform_image, retrain
 from flask import Flask ,url_for,render_template,request,abort
@@ -37,13 +36,17 @@ def train():
             arg1 = arg.get('arg1')
             arg2 = arg.get('arg2')
             arg3 = arg.get('arg3')
-            c.execute("INSERT INTO system_log2(datetime, endpoint, status) VALUES(?,?,?)", (formatted_date, 'train', 200))
-            conn.commit()
             data = retrain(arg1, arg2, arg3)
+            c.execute("INSERT INTO system_log2(datetime, endpoint, status) VALUES(?,?,?)", (formatted_date, 'train', 200))
+            c.execute("SELECT * FROM system_log2")
+            print(c.fetchall())
+            conn.commit()
             return jsonify(status=200, train_results='training accruacy: {}, validation accuracy: {}'.format(data[0], data[1]))
         # return 500 error to user 
         except:
             c.execute("INSERT INTO system_log2(datetime, endpoint, status) VALUES(?,?,?)", (formatted_date, 'train', 500))
+            c.execute("SELECT * FROM system_log2")
+            print(c.fetchall())
             conn.commit()
             return jsonify({'error': '500 Internal Server Error'})
             # abort(500)
@@ -68,14 +71,17 @@ def infer():
         try:
             img_bytes = file.read()
             tensor = transform_image(img_bytes)
+            output = predict(tensor)
             c.execute("INSERT INTO system_log2(datetime, endpoint, status) VALUES(?,?,?)", (formatted_date, 'infer', 200))
             c.execute("SELECT * FROM system_log2")
             conn.commit()
             print(c.fetchall())
-            return jsonify(status=200, predicted_class= predict(tensor))
+            return jsonify(status=200, predicted_class= output)
          # return 500 error to user 
         except:
             c.execute("INSERT INTO system_log2(datetime, endpoint, status) VALUES(?,?,?)", (formatted_date, 'infer', 500))
+            c.execute("SELECT * FROM system_log2")
+            print(c.fetchall())
             conn.commit()
             # abort(500)
             return jsonify({'error': '500 Internal Server Error'})        
