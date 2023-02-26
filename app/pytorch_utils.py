@@ -40,18 +40,19 @@ model = nn.Sequential(nn.Linear(input_size, hidden_sizes[0]),
                         nn.LogSoftmax(dim=1))
 # training function
 def retrain(lr, num_epoch, bs):
+  # transform / augment images 
     transform = transforms.Compose([transforms.ToTensor(),
                               transforms.Normalize((0.5,), (0.5,)),
                                 ])
+    # train and validation data split
     trainset = datasets.MNIST('train/', download=True, train=True, transform=transform)
     valset = datasets.MNIST('val/', download=True, train=False, transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=bs, shuffle=True)
     valloader = torch.utils.data.DataLoader(valset, batch_size=bs, shuffle=True)
     images, labels = next(iter(trainloader))
 
-    
-
-    # Build a feed-forward network
+   
+    # check input and label shapes 
    
     print(type(images))
     print(images.shape)
